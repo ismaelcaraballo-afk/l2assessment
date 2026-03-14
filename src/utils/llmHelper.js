@@ -1,8 +1,8 @@
-import Groq from 'groq-sdk';
+import Anthropic from '@anthropic-ai/sdk';
 
 /**
  * LLM Helper for categorizing customer support messages
- * Using Groq API for AI-powered categorization
+ * Using Anthropic Claude API for AI-powered categorization
  *
  * IMPROVEMENT 1: Structured prompt with defined categories and JSON output.
  * The original prompt was "Categorize this customer support message: {message}"
@@ -11,8 +11,8 @@ import Groq from 'groq-sdk';
  * is reliable and the category/urgency/action all come from the same LLM call.
  */
 
-const groq = new Groq({
-  apiKey: import.meta.env.VITE_GROQ_API_KEY,
+const anthropic = new Anthropic({
+  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
   dangerouslyAllowBrowser: true
 });
 
@@ -45,22 +45,20 @@ Urgency rules:
 Escalate if: High urgency, Churn Risk category, or security/data issue.`;
 
 /**
- * Analyze a customer support message using Groq AI.
+ * Analyze a customer support message using Anthropic Claude.
  * Returns category, urgency, reasoning, recommended action, and escalation flag.
  */
 export async function categorizeMessage(message) {
   try {
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: message }
-      ],
-      temperature: 0.1,
+    const response = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 300,
+      temperature: 0.1,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: message }],
     });
 
-    const content = response.choices[0].message.content.trim();
+    const content = response.content[0].text.trim();
     const parsed = JSON.parse(content);
 
     return {
@@ -71,7 +69,7 @@ export async function categorizeMessage(message) {
       shouldEscalate: parsed.should_escalate || false,
     };
   } catch (error) {
-    console.warn('Groq API failed, using mock response:', error.message);
+    console.warn('Anthropic API failed, using mock response:', error.message);
     return getMockCategorization(message);
   }
 }
