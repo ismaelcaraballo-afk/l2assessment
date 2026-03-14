@@ -28,21 +28,24 @@ function AnalyzePage() {
     setResults(null)
     
     try {
-      // Run categorization (LLM call)
-      const { category, reasoning } = await categorizeMessage(message)
-      
-      // Calculate urgency (rule-based)
-      const urgency = calculateUrgency(message)
-      
-      // Get recommended action (template-based)
-      const recommendedAction = getRecommendedAction(category)
-      
+      // Run categorization (LLM call) — returns category, urgency, reasoning,
+      // recommendedAction, and shouldEscalate all in one structured response
+      const { category, urgency: llmUrgency, reasoning, recommendedAction: llmAction, shouldEscalate } = await categorizeMessage(message)
+
+      // Rule-based urgency as a secondary signal — escalate to High if either fires
+      const ruleUrgency = calculateUrgency(message)
+      const urgency = (llmUrgency === "High" || ruleUrgency === "High") ? "High" : llmUrgency
+
+      // Use LLM-generated action if available, fall back to template
+      const recommendedAction = llmAction || getRecommendedAction(category)
+
       const analysisResult = {
         message,
         category,
         urgency,
         recommendedAction,
         reasoning,
+        shouldEscalate,
         timestamp: new Date().toISOString()
       }
 
@@ -147,6 +150,13 @@ function AnalyzePage() {
                   {results.urgency}
                 </div>
               </div>
+
+              {results.shouldEscalate && (
+                <div className="bg-red-50 border border-red-300 rounded-lg p-3 flex items-center gap-2">
+                  <span className="text-red-600 font-bold text-lg">⚠</span>
+                  <span className="text-red-800 font-semibold">Escalate to human agent — this message requires immediate attention.</span>
+                </div>
+              )}
 
               <div>
                 <div className="text-sm font-semibold text-gray-600 mb-1">Recommended Action</div>
