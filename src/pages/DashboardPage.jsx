@@ -23,7 +23,14 @@ function DashboardPage() {
 
     // Calculate stats
     const highUrgency = history.filter(h => h.urgency === 'High').length
-    const totalDays = history.length > 0 ? 7 : 1
+    // Use actual days since first message instead of hardcoded 7
+    const totalDays = history.length > 0
+      ? Math.max(1, Math.ceil(
+          (new Date() - new Date(history.reduce((min, item) =>
+            new Date(item.timestamp) < new Date(min.timestamp) ? item : min
+          ).timestamp)) / (1000 * 60 * 60 * 24)
+        ))
+      : 1
     
     setStats({
       total: history.length,
@@ -146,6 +153,12 @@ function DashboardPage() {
             )}
             {stats.today > 10 && (
               <p>📈 High activity today with {stats.today} messages analyzed</p>
+            )}
+            {categoryData.find(c => c.name === 'Churn Risk')?.count > 0 && (
+              <p>🚨 {categoryData.find(c => c.name === 'Churn Risk').count} churn risk message(s) detected — escalate to customer success immediately</p>
+            )}
+            {categoryData.find(c => c.name === 'Account Access')?.count > 0 && (
+              <p>🔐 {categoryData.find(c => c.name === 'Account Access').count} account access issue(s) — verify password reset flow is working</p>
             )}
             {stats.total === 0 && (
               <p>👋 Start by analyzing some messages to see insights here</p>
