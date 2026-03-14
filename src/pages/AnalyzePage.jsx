@@ -8,6 +8,7 @@ function AnalyzePage() {
   const [message, setMessage] = useState('')
   const [results, setResults] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     // Check for example message from home page
@@ -182,11 +183,12 @@ function AnalyzePage() {
                 onClick={() => {
                   const text = `Category: ${results.category}\nUrgency: ${results.urgency}\nRecommendation: ${results.recommendedAction}\n\nReasoning: ${results.reasoning}`
                   navigator.clipboard.writeText(text)
-                  alert('Results copied to clipboard!')
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
                 }}
                 className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 font-semibold"
               >
-                📋 Copy Results
+                {copied ? '✅ Copied!' : '📋 Copy Results'}
               </button>
             </div>
           </div>

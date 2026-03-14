@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown'
 function HistoryPage() {
   const [history, setHistory] = useState([])
   const [filter, setFilter] = useState('all')
-  const [expandedIndex, setExpandedIndex] = useState(null)
+  const [expandedKey, setExpandedKey] = useState(null)
 
   useEffect(() => {
     loadHistory()
@@ -100,14 +100,14 @@ function HistoryPage() {
         )}
 
         <div className="space-y-4">
-          {filteredHistory.map((item, index) => (
+          {filteredHistory.map((item) => (
             <div
-              key={index}
+              key={item.timestamp}
               className="bg-white rounded-lg shadow-md overflow-hidden"
             >
               <div
                 className="p-4 cursor-pointer hover:bg-gray-50"
-                onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                onClick={() => setExpandedKey(expandedKey === item.timestamp ? null : item.timestamp)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -136,12 +136,12 @@ function HistoryPage() {
                     </div>
                   </div>
                   <div className="text-gray-400 ml-4">
-                    {expandedIndex === index ? '▲' : '▼'}
+                    {expandedKey === item.timestamp ? '▲' : '▼'}
                   </div>
                 </div>
               </div>
 
-              {expandedIndex === index && (
+              {expandedKey === item.timestamp && (
                 <div className="border-t border-gray-200 p-4 bg-gray-50">
                   <div className="space-y-3">
                     <div>
